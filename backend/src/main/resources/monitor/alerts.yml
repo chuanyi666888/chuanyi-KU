@@ -1,0 +1,82 @@
+# =====================================================
+# 智慧粮库 - Prometheus 告警规则
+# =====================================================
+# 部署：复制到 /etc/prometheus/rules/smart-grain.yml
+# =====================================================
+
+groups:
+  - name: smart-grain-business
+    rules:
+      # 待处理告警 > 5 持续 1 分钟
+      - alert: HighPendingAlerts
+        expr: smartgrain_alerts_total{status="PENDING"} > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "待处理告警过多 ({{ $value }})"
+          description: "当前待处理告警数 {{ $value }}，超过阈值 5，请及时处理"
+
+      # 高严重告警 > 0
+      # 注：需要在 BusinessMetrics 中暴露 severity 标签才能使用
+      # 当前实现按 status 分组，故使用总告警数代替
+      - alert: AlertSpike
+        expr: increase(smartgrain_alerts_total{status="PENDING"}[5m]) > 3
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "5 分钟内新增告警 {{ $value }} 条"
+          description: "告警激增，请检查 IoT 传感器与设备状态"
+
+      # 库存总量异常下降 > 100 吨（5 分钟内）
+      - alert: StockDropAbnormal
+        expr: delta(smartgrain_stock_tons_total[5m]) < -100
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "库存异常下降 {{ $value }} 吨"
+          description: "5 分钟内库存下降超过 100 吨，请核查出库记录"
+
+      # 在线传感器数 < 总数 80%
+      - alert: SensorOffline
+        expr: smartgrain_sensors_total{status="online"} < 7
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "在线传感器 {{ $value }} 个"
+          description: "传感器在线数低于阈值，请检查设备连接"
+
+  - name: smart-grain-system
+    rules:
+      # 后端服务下线
+      - alert: BackendDown
+        expr: up{job="smart-grain-backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "后端服务下线"
+          description: "{{ $labels.instance }} 抓取失败超过 30 秒"
+
+      # JVM 内存使用率 > 85%
+      - alert: HighJvmMemory
+        expr: (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) * 100 > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM 堆内存使用率 {{ $value }}%"
+          description: "JVM 堆内存使用率持续 2 分钟超过 85%"
+
+      # HTTP 5xx 错误率
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[1m]) > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HTTP 5xx 错误率过高"
+          description: "1 分钟内 5xx 错误率 {{ $value }} 次/秒"

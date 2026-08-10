@@ -1,0 +1,49 @@
+# ===== 通用 =====
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+.idea/
+.vscode/
+*.iml
+
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+.mvn/
+mvnw
+mvnw.cmd
+
+# ===== Node / Frontend =====
+node_modules/
+dist/
+dist-ssr/
+.npm/
+.pnpm-store/
+*.local
+src/types/auto-imports.d.ts
+src/types/components.d.ts
+
+# ===== 环境配置（含敏感信息）=====
+.env.local
+.env.*.local
+application-local.yml
+application-prod-local.yml
+/etc/grain/grain.env
+
+# ===== 备份产物 =====
+backup-tool/backups/
+*.sql.gz
+*.tar.gz
+
+# ===== IDE / OS =====
+.cache/
+.history/
+
+# ===== 临时测试文件（含敏感凭证）=====
+tmp_login.json
+test_grain_api.ps1
+*.local.ps1

@@ -1,0 +1,51 @@
+# =====================================================
+# Prometheus 抓取配置
+# =====================================================
+# 部署：复制到 /etc/prometheus/prometheus.yml 后重载
+#   curl -X POST http://localhost:9090/-/reload
+# =====================================================
+
+global:
+  scrape_interval: 15s          # 默认抓取间隔
+  evaluation_interval: 15s      # 规则评估间隔
+
+# 告警规则（可选）
+rule_files:
+  - "rules/*.yml"
+
+# Alertmanager（可选）
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['localhost:9093']
+
+scrape_configs:
+  # 智慧粮库后端 - 业务 + JVM 指标
+  - job_name: 'smart-grain-backend'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['localhost:8090']
+        labels:
+          service: 'smart-grain-backend'
+          env: 'dev'
+
+  # Prometheus 自身
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter（系统指标，可选）
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['localhost:9100']
+
+  # MySQL Exporter（可选）
+  # - job_name: 'mysql'
+  #   static_configs:
+  #     - targets: ['localhost:9104']
+
+  # Redis Exporter（可选）
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['localhost:9121']

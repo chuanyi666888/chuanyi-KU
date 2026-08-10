@@ -1,0 +1,40 @@
+[Unit]
+Description=Smart Grain Warehouse Backend (智慧粮库后端)
+Documentation=https://github.com/smartgrain/smart-grain-backend
+After=network.target mysql.service mysqld.service kingbase.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=smartgrain
+Group=smartgrain
+WorkingDirectory=/opt/smartgrain
+ExecStart=/usr/local/java/bin/java -Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 \
+    -Dfile.encoding=UTF-8 \
+    -Duser.timezone=Asia/Shanghai \
+    -Dspring.profiles.active=prod \
+    -Dserver.port=8090 \
+    -jar /opt/smartgrain/smart-grain-backend.jar
+Restart=on-failure
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# 标准输出/错误写入日志
+StandardOutput=append:/var/log/smartgrain/backend.log
+StandardError=append:/var/log/smartgrain/backend-error.log
+
+# 限制
+LimitNOFILE=65536
+LimitNPROC=4096
+TimeoutStopSec=30
+
+# 安全加固
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/log/smartgrain /opt/smartgrain/logs
+
+[Install]
+WantedBy=multi-user.target

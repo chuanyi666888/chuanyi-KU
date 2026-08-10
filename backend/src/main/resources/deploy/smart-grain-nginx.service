@@ -1,0 +1,17 @@
+[Unit]
+Description=Smart Grain Warehouse Frontend (Nginx)
+After=network.target smart-grain-backend.service
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx.conf
+ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
+ExecReload=/usr/sbin/nginx -s reload
+ExecStop=/usr/sbin/nginx -s stop
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

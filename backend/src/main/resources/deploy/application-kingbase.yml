@@ -1,0 +1,30 @@
+# =====================================================
+# KingbaseES 生产环境配置（替代 application-prod.yml 中 MySQL 部分）
+# =====================================================
+# 部署：替换 application-prod.yml 中 spring.datasource 节
+#   或使用 SPRING_CONFIG_ADDITIONAL_LOCATION 加载
+# =====================================================
+
+spring:
+  datasource:
+    # KingbaseES V8R6+ JDBC 驱动
+    driver-class-name: com.kingbase8.Driver
+    url: jdbc:kingbase8://${DB_HOST:127.0.0.1}:${DB_PORT:54321}/${DB_NAME:smart_grain}?currentSchema=public&useUnicode=true&characterEncoding=utf8
+    username: ${DB_USERNAME:smartgrain}
+    password: ${DB_PASSWORD:smartgrain}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+mybatis-plus:
+  configuration:
+    # KingbaseES 兼容 PostgreSQL 语法
+    database-id: kingbase
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      # KingbaseES 不支持 ASSIGN_ID 雪花算法的某些写法，但 MyBatis-Plus 内部生成不受影响
+      id-type: ASSIGN_ID
